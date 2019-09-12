@@ -74,6 +74,11 @@ def say(words, color: nil, title: false)
     words = Paint[words, color]
   end
 
+  if title
+    puts ""
+    puts SEPARATOR
+  end
+
   indented_words = words.gsub("\n", "\n     ")
 
   if title
@@ -98,9 +103,18 @@ VECTOR_DOCS_HOST = "https://docs.vector.dev"
 # Render templates
 #
 
-puts ""
+puts <<-EOF
+                                    __   __  __  
+                                    \\ \\ / / / /
+                                     \\ V / / /
+                                      \\_/  \\/
+
+                                    V E C T O R
+                                      Generate
+#{SEPARATOR}
+EOF
+
 say("Generating files...", title: true)
-puts ""
 
 if CHECK_URLS
   message =
@@ -164,9 +178,7 @@ PostProcessors::ComponentPresenceChecker.check!("sinks", docs, metadata.sinks)
 # Post process individual docs
 #
 
-puts ""
 say("Post processing files...", title: true)
-puts ""
 
 docs = Dir.glob("#{DOCS_ROOT}/**/*.md").to_a
 docs = docs + ["#{VECTOR_ROOT}/README.md"]
