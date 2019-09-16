@@ -1,10 +1,9 @@
 class Release
-  attr_reader :commits, :last_version, :last_tag, :last_commit, :upgrade_guide_path, :version
+  attr_reader :commits, :last_version, :last_tag, :upgrade_guide_path, :version
 
-  def initialize(last_version, last_tag, last_commit, version, commits, upgrade_guide_path)
+  def initialize(last_version, last_tag, version, commits, upgrade_guide_path)
     @last_version = last_version
     @last_tag = last_tag
-    @last_commit = last_commit
     @version = version
     @commits = commits
     @upgrade_guide_path = upgrade_guide_path

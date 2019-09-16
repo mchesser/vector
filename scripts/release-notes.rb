@@ -22,7 +22,6 @@ require "active_support/core_ext/string/indent"
 require "active_support/core_ext/string/inflections"
 require "action_view/helpers/number_helper"
 require "erb"
-require "logger"
 require "pathname"
 
 require_relative "util/printer"
@@ -36,19 +35,14 @@ require_relative "release-notes/templates"
 # Constants
 #
 
-DOCS_DIR = Pathname.new("#{Dir.pwd}/../../docs").cleanpath
-LAST_COMMIT = `git rev-parse HEAD`.chomp
+ROOT_DIR = Pathname.new("#{Dir.pwd}/../..").cleanpath
+DOCS_DIR = "#{ROOT_DIR}/docs"
 LAST_TAG = `git describe --abbrev=0`.chomp
 LAST_VERSION = Version.new(LAST_TAG.gsub(/^v/, ''))
 RELEASE_NOTES_DIR = "#{DOCS_DIR}/meta/release-notes"
 SEPARATOR = "-" * 80
-TMP_LOG_FILE = "#{Dir.pwd}/.staged_commits.tmp"
+RELEASES_META_DIR = "#{ROOT_DIR}/.meta/releases"
 UPGRADE_GUIDES_DIR = "#{DOCS_DIR}/usage/administration/updating"
-
-LOGGER = Logger.new(STDOUT)
-LOGGER.formatter = proc do |_severity, _datetime, _progname, msg|
-  "#{SAY_PREFIX}#{msg}\n"
-end
 
 #
 # Includes
@@ -128,15 +122,18 @@ def get_new_version
   end
 end
 
-def get_commit_lines(range)
+def get_commit_lines(last_version, new_version)
+  last_commit = `git rev-parse HEAD`.chomp
+  range = "v#{last_version}...#{last_commit}"
   log = `git log #{range} --no-merges --pretty=format:'%H\t%s\t%aN\t%ad'`
+  release_meta_path = "#{RELEASES_META_DIR}/v#{new_version}.toml"
 
-  if File.exists?(TMP_LOG_FILE)
+  if File.exists?(TMP_COMMITS_FILE)
     words =
       <<~EOF
       It looks like you've already staged commits for this release in:
 
-        #{TMP_LOG_FILE}
+        #{TMP_COMMITS_FILE}
 
       Would you like to reuse this file?
       EOF
@@ -144,12 +141,12 @@ def get_commit_lines(range)
     input = get(words, ["y", "n"])
 
     if input == "n"
-      File.delete(TMP_LOG_FILE)
+      File.delete(TMP_COMMITS_FILE)
       say("File deleted")
       get_commit_lines(range)
     end
   else
-    File.open(TMP_LOG_FILE, 'w+') do |file|
+    File.open(TMP_COMMITS_FILE, 'w+') do |file|
       file.write(log)
     end
 
@@ -157,7 +154,7 @@ def get_commit_lines(range)
       <<~EOF
       I've staged all commits for this release in the follow file:
 
-        #{TMP_LOG_FILE}
+        #{TMP_COMMITS_FILE}
 
       Please modify and reword as necessary. Once done, come back to this window.
       EOF
@@ -166,7 +163,7 @@ def get_commit_lines(range)
     get("Hit enter when you are ready to proceed...")
   end
 
-  File.read(TMP_LOG_FILE).split("\n")
+  File.read(TMP_COMMITS_FILE).split("\n")
 end
 
 def get_upgrade_guide_path(last_version, new_version)
@@ -257,10 +254,10 @@ title("Building release notes...")
 #require_master_branch!()
 #require_clean_branch!()
 new_version = get_new_version()
-commit_lines = get_commit_lines("#{LAST_TAG}...#{LAST_COMMIT}")
+commit_lines = get_commit_lines(LAST_VERSION, new_version)
 upgrade_guide_path = get_upgrade_guide_path(LAST_VERSION, new_version)
 commits = Commit.all!(commit_lines)
-release = Release.new(LAST_VERSION, LAST_TAG, LAST_COMMIT, new_version, commits, upgrade_guide_path)
+release = Release.new(LAST_VERSION, LAST_TAG, new_version, commits, upgrade_guide_path)
 
 save_release_notes!(release)
 commit_changes!(release)
