@@ -1,5 +1,10 @@
 class Version < Gem::Version
   def bump_type(other_version)
+    # Return nil if the other version is not greater than the current version
+    if other_version <= self
+      return nil
+    end
+
     bumped_version = bump
     next_major = segments.first + 1
 

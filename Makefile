@@ -38,13 +38,14 @@ check-generate: ## Checks for pending `make generate` changes
 
 check_urls ?= true
 generate: ## Generates files across the repo using the data in /.meta
-	@bundle install --gemfile=scripts/generate/Gemfile
+	@bundle install --gemfile=scripts/generate/Gemfile > /dev/null
 	@export VERSION=$(_latest_version); scripts/generate.rb --check-urls=$(check_urls)
 
 fmt: ## Format code
 	@cargo fmt
 
-release: release-summary generate
+release: ## Release a new version
+	@$(MAKE) release-notes
 
 run: ## Starts Vector in development mode
 	@cargo run
@@ -82,15 +83,18 @@ release-github: ## Release to Github
 release-homebrew: ## Release to timberio Homebrew tap
 	@scripts/release-homebrew.sh
 
+release-notes: ## Builds the release release-notes
+	@bundle install --gemfile=scripts/release-notes/Gemfile > /dev/null
+	@scripts/release-notes.rb
+	@$(MAKE) generate check_urls=false
+
 release-rpm: ## Release .rpm via Package Cloud
 	@scripts/release-rpm.sh
 
 release-s3: ## Release artifacts to S3
 	@scripts/release-s3.sh
 
-release-summary: ## Builds the release release-summary
-	@bundle install --gemfile=scripts/release/Gemfile
-	@scripts/release.rb
+release-tag: ## Tag pending
 
 version: ## Get the current Vector version
 	@echo $(_version)

@@ -1,17 +1,12 @@
 #!/usr/bin/env ruby
 
-# release.rb
+# release-notes.rb
 #
 # SUMMARY
 #
-#   A script that formalizes the Vector release process. This script
-#   specifically does the following:
-#
-#     1. fill in
-#
-#   See the README.md in the release folder for more details.
+#   A script that produces release notes for the upcoming release.
 
-Dir.chdir "scripts/release"
+Dir.chdir "scripts/release-notes"
 
 #
 # Require
@@ -30,27 +25,22 @@ require "erb"
 require "logger"
 require "pathname"
 
+require_relative "util/printer"
 require_relative "util/version"
-require_relative "release/commit"
-require_relative "release/github"
-require_relative "release/release"
-require_relative "release/scope"
-require_relative "release/templates"
+require_relative "release-notes/commit"
+require_relative "release-notes/release"
+require_relative "release-notes/scope"
+require_relative "release-notes/templates"
 
 #
 # Constants
 #
 
 DOCS_DIR = Pathname.new("#{Dir.pwd}/../../docs").cleanpath
-GITHUB = Github.new
-GITHUB_ORG = "timberio"
-GITHUB_REPO = "vector"
 LAST_COMMIT = `git rev-parse HEAD`.chomp
 LAST_TAG = `git describe --abbrev=0`.chomp
 LAST_VERSION = Version.new(LAST_TAG.gsub(/^v/, ''))
 RELEASE_NOTES_DIR = "#{DOCS_DIR}/meta/release-notes"
-SAY_PREFIX = "---> "
-SAY_INDENT = "     "
 SEPARATOR = "-" * 80
 TMP_LOG_FILE = "#{Dir.pwd}/.staged_commits.tmp"
 UPGRADE_GUIDES_DIR = "#{DOCS_DIR}/usage/administration/updating"
@@ -61,51 +51,63 @@ LOGGER.formatter = proc do |_severity, _datetime, _progname, msg|
 end
 
 #
-# Writing
+# Includes
 #
 
-def error!(message)
-  say(message, color: :red)
-  exit(1)
-end
-
-def get(words, choices = nil)
-  question = "#{words.strip}"
-
-  if !choices.nil?
-    question += " (" + choices.join("/") + ")"
-  end
-
-  say(question)
-
-  print SAY_INDENT
-  input = gets.chomp
-
-  if choices && !choices.include?(input)
-    say("You must enter one of #{choices.to_sentence(last_word_connector: ", or ")}", color: :red)
-    get(words, choices)
-  else
-    input
-  end
-end
-
-def invalid(words)
-  say(words, color: :orange)
-end
-
-def say(words, color: nil, new: true)
-  if color
-    words = Paint[words, color]
-  end
-
-  indented_words = words.gsub("\n", "\n#{SAY_INDENT}")
-
-  puts "#{new ? SAY_PREFIX : SAY_INDENT}#{indented_words}"
-end
+include Printer
 
 #
-# Release Functions
+# Functions
 #
+
+def commit_changes!(release)
+  branch_name = "#{release.version.major}.#{release.version.minor}"
+
+  commands =
+    <<~EOF
+    git add docs/*
+    git commit -sam 'chore: Prepare v#{release.version} release'
+    git push origin master
+    git tag -a v#{release.version} -m "v#{release.version}"
+    git push origin v#{release.version}
+    git branch v#{branch_name}
+    git push origin v#{branch_name}
+    EOF
+
+  commands.chomp!
+
+  words =
+    <<~EOF
+    Final step. Let's commit the changes and tag the release:
+
+    #{commands.indent(2)}
+
+    Ready to execute the above commands?
+    EOF
+
+  if Printer.get(words, ["y", "n"]) == "n"
+    Printer.error!("Ok, I've aborted. Please re-run this command when you're ready.")
+  end
+
+  # commands.chomp.split("\n").each do |command|
+  #   system(command)
+
+  #   if !$?.success?
+  #     error!(
+  #       <<~EOF
+  #       Command failed!
+
+  #         #{command}
+
+  #       Produced the following error:
+
+  #         #{$?.inspect}
+  #       EOF
+  #     )
+  # end
+
+  true
+end
 
 def get_new_version
   version_string = get("What is the next version you are releasing? (current version is #{LAST_VERSION})")
@@ -238,7 +240,7 @@ def save_release_notes!(release)
 
       #{path}
 
-    Does everything look good? Typing 'y' will commit and tag these changes.
+    Does everything look good?
     EOF
 
   if get(words, ["y", "n"]) == "n"
@@ -250,16 +252,7 @@ end
 # Execute
 #
 
-puts <<-EOF
-                                    __   __  __  
-                                    \\ \\ / / / /
-                                     \\ V / / /
-                                      \\_/  \\/
-
-                                    V E C T O R
-                                      Release
-#{SEPARATOR}
-EOF
+title("Building release notes...")
 
 #require_master_branch!()
 #require_clean_branch!()
@@ -270,17 +263,6 @@ commits = Commit.all!(commit_lines)
 release = Release.new(LAST_VERSION, LAST_TAG, LAST_COMMIT, new_version, commits, upgrade_guide_path)
 
 save_release_notes!(release)
+commit_changes!(release)
 
-`git add . -A`
-`git commit -am 'Prepare v#{release.version} release'`
-`git tag v#{release.version}`
-`git push`
-
-# get last tag
-# get commits
-# parse commits
-# prepare summary
-# add placeholder for human input
-# wait for changes to be made
-# verify that placeholder was removed
-# 
+say("🚀 release #{release.version} is out!", color: :green)

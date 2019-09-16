@@ -23,6 +23,7 @@ require "rubygems"
 require "bundler"
 Bundler.require(:default)
 
+require_relative "util/printer"
 require_relative "generate/context"
 require_relative "generate/core_ext/hash"
 require_relative "generate/core_ext/object"
@@ -32,6 +33,12 @@ require_relative "generate/post_processors/link_checker"
 require_relative "generate/post_processors/option_referencer"
 require_relative "generate/post_processors/section_sorter"
 require_relative "generate/post_processors/toml_syntax_switcher"
+
+#
+# Includes
+#
+
+include Printer
 
 #
 # Functions
@@ -69,25 +76,6 @@ def render(template, context)
   content
 end
 
-def say(words, color: nil, title: false)
-  if color
-    words = Paint[words, color]
-  end
-
-  if title
-    puts ""
-    puts SEPARATOR
-  end
-
-  indented_words = words.gsub("\n", "\n     ")
-
-  if title
-    puts "#### #{indented_words}"
-  else
-    puts "---> #{indented_words}"
-  end
-end
-
 #
 # Constants
 #
@@ -103,18 +91,7 @@ VECTOR_DOCS_HOST = "https://docs.vector.dev"
 # Render templates
 #
 
-puts <<-EOF
-                                    __   __  __  
-                                    \\ \\ / / / /
-                                     \\ V / / /
-                                      \\_/  \\/
-
-                                    V E C T O R
-                                      Generate
-#{SEPARATOR}
-EOF
-
-say("Generating files...", title: true)
+title("Generating files...")
 
 if CHECK_URLS
   message =
@@ -178,7 +155,7 @@ PostProcessors::ComponentPresenceChecker.check!("sinks", docs, metadata.sinks)
 # Post process individual docs
 #
 
-say("Post processing files...", title: true)
+title("Post processing generated files...")
 
 docs = Dir.glob("#{DOCS_ROOT}/**/*.md").to_a
 docs = docs + ["#{VECTOR_ROOT}/README.md"]
