@@ -21,10 +21,11 @@ module Printer
     say(question)
 
     print INDENT
-    input = gets.chomp
+
+    input = gets().chomp
 
     if choices && !choices.include?(input)
-      say("You must enter one of #{choices.to_sentence(last_word_connector: ", or ")}", color: :red)
+      say("You must enter one of #{choices.join(", ")}", color: :red)
       get(words, choices)
     else
       input
@@ -61,6 +62,7 @@ module Printer
   def title(words)
     separate(color: :cyan)
     say(words, color: :cyan, prompt: TITLE_PROMPT)
+    separate(color: :cyan)
     puts ""
   end
 end

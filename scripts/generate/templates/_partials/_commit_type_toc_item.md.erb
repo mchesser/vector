@@ -1,0 +1,3 @@
+<%- if commits.any? -%>
+* [**<%= pluralize(commits.size, type_name) %>**](#<%= type_name.pluralize.parameterize %>) - <% commits.group_by(&:category).each do |category, category_commits| %>[<%= category_commits.size %> <%= category %>](#<%= commit_type_category(type_name, category).pluralize.parameterize %>), <% end %>
+<%- end -%>

@@ -27,6 +27,15 @@ class Sink < Component
     @service_provider = hash["service_provider"]
     @write_to_description = hash.fetch("write_to_description")
 
+    # Validation
+
+    if !DELIVERY_GUARANTEES.include?(@delivery_guarantee)
+      raise(
+        "Source #delivery_guarantee must be one of: " +
+          "#{DELIVERY_GUARANTEES.inspect}, got #{@delivery_guarantee.inspect}"
+      )
+    end
+
     if (invalid_types = @input_types - EVENT_TYPES) != []
       raise("#{self.class.name}#input_types contains invalid values: #{invalid_types.inspect}")
     end

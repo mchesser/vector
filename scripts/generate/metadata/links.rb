@@ -80,8 +80,9 @@ class Links
   VECTOR_RELEASE_ROOT = "#{VECTOR_ROOT}/releases/tag"
   TEST_HARNESS_ROOT = "https://github.com/timberio/vector-test-harness"
 
-  def initialize(links)    
+  def initialize(links, check_urls: true)    
     @links = links
+    @check_urls = check_urls
     @checked_urls = {}
 
     @docs_files =
@@ -126,7 +127,7 @@ class Links
       path_or_url = normalize_path(path_or_url, opts[:current_file])
     end
 
-    if CHECK_URLS
+    if check_urls?
       check!(path_or_url)
     end
 
@@ -207,6 +208,10 @@ class Links
       else
         true
       end
+    end
+
+    def check_urls?
+      @check_urls == true
     end
 
     def find_doc!(name)
@@ -314,7 +319,7 @@ class Links
 
       when /^url\.v([a-z0-9-]+)$/
         version = $1.gsub("-", ".")
-        "#{VECTOR_RELEASE_ROOT}/#{$1}"
+        "#{VECTOR_RELEASE_ROOT}/#{version}"
 
       when /^url\.(.*)_(sink|source|transform)_issues$/
         name = $1

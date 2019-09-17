@@ -1,0 +1,53 @@
+---
+description: Vector v<%= release.version %> release notes: <%= release_summary(release) %>.
+---
+
+# v<%= release.version %> release notes
+
+![Vector v<%= release.version %> release][images.v<%= release.version %>]
+
+---
+
+<p align="center">
+  Get notified of releases: <strong><a href="https://github.com/timberio/vector/watchers">watch the Vector repo</a></strong> or <strong><a href="https://vector.dev/mailing_list/">join our mailing list</a></strong>.
+</p>
+
+---
+
+* [**Changes**](#changes) - [+<%= release.insertions_count %> -<%= release.deletions_count %>](<%= release.compare_url %>)<% if newer_releases.any? %>, [⚠️ <%= pluralize(newer_releases.size, "newer release") %>][docs.releases]<% end %>
+<%=- commit_type_toc_item("breaking change", release.breaking_changes).indent(2) -%>
+<%=- commit_type_toc_item("new feature", release.new_features).indent(2) -%>
+<%=- commit_type_toc_item("enhancement", release.enhancements).indent(2) -%>
+<%=- commit_type_toc_item("performance improvement", release.performance_improvements).indent(2) -%>
+<%=- commit_type_toc_item("bug fix", release.bug_fixes).indent(2) -%>
+* [**Contributors**](#contributors)
+* [**Updating**](#updating) - [download][<%= release.short_link %>]
+* [**Community**][url.community] - [chat/forum][url.vector_chat], [mailing list][url.mailing_list]
+* [**Roadmap**][url.roadmap] - [vote on new features][url.vote_feature]
+
+---
+
+## Changes
+
+<%=- commit_type_commits("breaking change", release.breaking_changes) -%>
+<%=- commit_type_commits("new feature", release.new_features) -%>
+<%=- commit_type_commits("enhancement", release.enhancements) -%>
+<%=- commit_type_commits("performance improvement", release.performance_improvements) -%>
+<%=- commit_type_commits("bug fix", release.bug_fixes) -%>
+## Contributors
+
+Thank you to all of our contributors:
+
+<%- release.authors.each do |author| -%>
+* <%= author %>
+<%- end -%>
+
+## Updating
+
+This release does not require a special upgrade process, please update by following the [standard updating process for your platform][docs.updating].
+
+---
+
+<p align="center">
+  Developed with ❤️ by <strong><a href="https://timber.io">Timber.io</a></strong>
+</p>

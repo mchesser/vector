@@ -36,16 +36,16 @@ check-generate: ## Checks for pending `make generate` changes
 	@bundle install --gemfile=scripts/generate/Gemfile
 	@scripts/check-generate.sh
 
-check_urls ?= true
 generate: ## Generates files across the repo using the data in /.meta
 	@bundle install --gemfile=scripts/generate/Gemfile > /dev/null
-	@export VERSION=$(_latest_version); scripts/generate.rb --check-urls=$(check_urls)
+	@export VERSION=$(_latest_version); scripts/generate.rb
 
 fmt: ## Format code
 	@cargo fmt
 
 release: ## Release a new version
-	@$(MAKE) release-notes
+	@$(MAKE) release-prepare
+	@$(MAKE) generate
 
 run: ## Starts Vector in development mode
 	@cargo run
@@ -83,10 +83,9 @@ release-github: ## Release to Github
 release-homebrew: ## Release to timberio Homebrew tap
 	@scripts/release-homebrew.sh
 
-release-notes: ## Builds the release release-notes
-	@bundle install --gemfile=scripts/release-notes/Gemfile > /dev/null
-	@scripts/release-notes.rb
-	@$(MAKE) generate check_urls=false
+release-prepare: ## Builds the release release-notes
+	@bundle install --gemfile=scripts/release-prepare/Gemfile > /dev/null
+	@scripts/release-prepare.rb
 
 release-rpm: ## Release .rpm via Package Cloud
 	@scripts/release-rpm.sh

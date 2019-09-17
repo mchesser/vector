@@ -1,4 +1,4 @@
-class Scope
+class CommitScope
   include Comparable
 
   attr_reader :name

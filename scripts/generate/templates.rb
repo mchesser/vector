@@ -1,18 +1,17 @@
+require "erb"
+
 require "active_support/core_ext/array/conversions"
 require "active_support/core_ext/string/indent"
 require "active_support/core_ext/string/output_safety"
+require "action_view/helpers/number_helper"
 
 require_relative "metadata"
-require_relative "context/config_example"
-require_relative "context/config_schema"
-require_relative "context/config_spec"
-require_relative "context/options_table"
+require_relative "templates/config_example"
+require_relative "templates/config_schema"
+require_relative "templates/config_spec"
+require_relative "templates/options_table"
 
-# Represents the context when rendering templates
-#
-# This class is the context used when rendering templates. Notice the
-# #get_binding method, this is passed as the binding when rendering
-# each ERB template.
+# Renders teampltes in the templates sub-dir
 #
 # ==== Partials
 #
@@ -26,24 +25,70 @@ require_relative "context/options_table"
 #
 # There are times whewre it makes sense to represent logic in a sub-object.
 # This is usually true for complicated partials. For example, the
-# `options_table` partial also instantiates an `Context::OptionsTable` object
+# `options_table` partial also instantiates an `Templates::OptionsTable` object
 # that is made available to the `options_table` partial. This reduces the
-# noise and complexity for the global `Context` object.
+# noise and complexity for the global `Templates` object.
 #
 # ==== Keep It Simple
 #
 # In most cases it is easier to avoid partials and sub-objects. A simple
-# template with some global methods added to the `Context` object will
+# template with some global methods added to the `Templates` object will
 # generally suffice.
-class Context
+class Templates
+  include ActionView::Helpers::NumberHelper
+
   attr_reader :metadata
 
   def initialize(metadata)
     @metadata = metadata
   end
 
+  def render_commit(commit)
+    render("_partials/_commit.md", binding).gsub("\n", "")
+  end
+
+  def render_commit_scope(scope)
+    text =
+      if scope.existing_component?
+        "`#{scope.component_name}` #{scope.component_type}"
+      else
+         scope.name
+      end
+
+    if scope.short_link
+      "[#{text}][#{scope.short_link}]"
+    else
+      text
+    end
+  end
+
+  def commit_type_category(type_name, category)
+    if type_name == "new feature"
+      "new #{category}"
+    else
+      "#{category} #{type_name}"
+    end
+  end
+
+  def commit_type_commits(type_name, commits)
+    commits =
+      commits.sort_by do |commit|
+        [commit.scope.category, commit.scope.name, commit.date]
+      end
+
+    render("_partials/_commit_type_commits.md", binding)
+  end
+
+  def commit_type_toc_item(type_name, commits)
+    render("_partials/_commit_type_toc_item.md", binding).strip.gsub(/,$/, "")
+  end
+
   def component_config_example(component)
-    render_partial("component_config_example.md", binding)
+    render("_partials/_component_config_example.md", binding).strip
+  end
+
+  def component_default(component)
+    render("_defaults/component.md.erb", binding).strip
   end
 
   def component_description(component)
@@ -51,15 +96,19 @@ class Context
   end
 
   def component_header(component)
-    render_partial("component_header.md", binding)
+    render("_partials/_component_header.md", binding).strip
+  end
+
+  def component_release_notes_default(component)
+    render("_partials/_component_release_notes_default.md.erb", binding)
   end
 
   def component_resources(component)
-    render_partial("component_resources.md", binding)
+    render("_partials/_component_resources.md", binding).strip
   end
 
   def component_sections(component)
-    render_partial("component_sections.md", binding)
+    render("_partials/_component_sections.md", binding).strip
   end
 
   def components_table(components)
@@ -67,11 +116,11 @@ class Context
       raise ArgumentError.new("Options must be an Array")
     end
 
-    render_partial("components_table.md", binding)
+    render("_partials/_components_table.md", binding).strip
   end
 
   def component_troubleshooting(component)
-    render_partial("component_troubleshooting.md", binding)
+    render("_partials/_component_troubleshooting.md", binding).strip
   end
 
   def compression_description(compression)
@@ -93,7 +142,7 @@ class Context
     opts[:titles] = true unless opts.key?(:titles)
 
     example = ConfigExample.new(options)
-    render_partial("config_example.toml", binding)
+    render("_partials/_config_example.toml", binding).strip
   end
 
   def config_schema(options, opts = {})
@@ -104,7 +153,7 @@ class Context
     opts[:titles] = true unless opts.key?(:titles)
 
     schema = ConfigSchema.new(options)
-    render_partial("config_schema.toml", binding)
+    render("_partials/_config_schema.toml", binding).strip
   end
 
   def config_spec(options, opts = {})
@@ -115,7 +164,7 @@ class Context
     opts[:titles] = true unless opts.key?(:titles)
 
     spec = ConfigSpec.new(options)
-    render_partial("config_spec.toml", binding)
+    render("_partials/_config_spec.toml", binding).strip
   end
 
   def encoding_description(encoding)
@@ -140,11 +189,7 @@ class Context
   end
 
   def full_config_spec
-    render_partial("full_config_spec.toml", binding)
-  end
-
-  def get_binding
-    binding
+    render("_partials/_full_config_spec.toml", binding).strip
   end
 
   def option_names(options)
@@ -160,14 +205,76 @@ class Context
     opts[:titles] = true unless opts.key?(:titles)
 
     table = OptionsTable.new(options)
-    render_partial("options_table.md", binding)
+    render("_partials/_options_table.md", binding).strip
   end
 
-  def render_partial(name, binding = nil)
-    path = "#{Dir.pwd}/templates/_partials/_#{name}.erb"
-    content = File.read(path)
+  def partial?(template_path)
+    basename = File.basename(template_path)
+    basename.start_with?("_")
+  end
+
+  def pluralize(count, word)
+    count != 1 ? "#{count} #{word.pluralize}" : "#{count} #{word}"
+  end
+
+  def release_notes(release)
+    newer_releases = metadata.newer_releases(release)
+    render("_partials/_release_notes.md", binding)
+  end
+
+  def release_notes_default(release)
+    render("_partials/_release_notes_default.md.erb", binding)
+  end
+
+  def release_summary(release)
+    parts = []
+
+    if release.new_features.any?
+      parts << pluralize(release.new_features.size, "new feature")
+    end
+
+    if release.enhancements.any?
+      parts << pluralize(release.enhancements.size, "enhancement")
+    end
+
+    if release.bug_fixes.any?
+      parts << pluralize(release.bug_fixes.size, "bug fix")
+    end
+
+    parts.join(", ")
+  end
+
+  def release_svg(release)
+    render("_partials/_release.svg", binding)
+  end
+
+  def release_svg_default(release)
+    render("_partials/_release_default.svg.erb", binding)
+  end
+
+  def render(template_path, template_binding = nil)
+    template_binding = binding if template_binding.nil?
+    content = File.read("templates/#{template_path}.erb")
     renderer = ERB.new(content, nil, '-')
-    renderer.result(binding).strip
+    content = renderer.result(template_binding)
+
+    if template_path.end_with?(".md") && !partial?(template_path)
+      notice =
+        <<~EOF
+
+        <!--
+             THIS FILE IS AUTOGENERATED!
+
+             To make changes please edit the template located at:
+
+             scripts/generate/templates/#{template_path}.erb
+        -->
+        EOF
+
+      content.sub!(/\n# /, "#{notice}\n# ")
+    end
+
+    content
   end
 
   def sink_description(sink)
@@ -205,13 +312,10 @@ class Context
   end
 
   private
-    def is_primitive_type?(value)
-      value.is_a?(String) ||
-        value.is_a?(Integer) ||
-        value.is_a?(TrueClass) ||
-        value.is_a?(FalseClass) ||
-        value.is_a?(NilClass) ||
-        value.is_a?(Float)
+    def build_renderer(template)
+      template_path = "#{Dir.pwd}/templates/#{template}.erb"
+      template = File.read(template_path)
+      ERB.new(template, nil, '-')
     end
 
     def strip(content)

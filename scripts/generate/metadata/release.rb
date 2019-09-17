@@ -1,12 +1,27 @@
-class Release
-  attr_reader :commits, :last_version, :last_tag, :upgrade_guide_path, :version
+require_relative "commit"
+require_relative "../../util/version"
 
-  def initialize(last_version, last_tag, version, commits, upgrade_guide_path)
+class Release
+  include Comparable
+
+  attr_reader :commits, :last_version, :version
+
+  def initialize(release_hash, last_version)
     @last_version = last_version
-    @last_tag = last_tag
-    @version = version
-    @commits = commits
-    @upgrade_guide_path = upgrade_guide_path
+    @version = Version.new(release_hash.fetch("version"))
+
+    @commits =
+      release_hash.fetch("commits").collect do |commit_hash|
+        Commit.new(commit_hash)
+      end
+  end
+
+  def <=>(other)
+    if other.is_a?(self.class)
+      version <=> other.version
+    else
+      nil
+    end
   end
 
   def authors
@@ -37,8 +52,16 @@ class Release
     @enhancements ||= commits.select(&:enhancement?)
   end
 
+  def eql?(other)
+    self.<=>(other) == 0
+  end
+
   def files_count
     @files_count ||= countable_commits.sum(&:files_count)
+  end
+
+  def hash
+    version.hash
   end
 
   def insertions_count
@@ -47,6 +70,12 @@ class Release
 
   def new_features
     @new_features ||= commits.select(&:new_feature?)
+  end
+
+  def newer_releases(release)
+    releases.to_h.values.select do |other_release|
+      other_release > release
+    end
   end
 
   def major?
@@ -75,14 +104,6 @@ class Release
 
   def type
     @type ||= last_version.bump_type(version)
-  end
-
-  def upgrade_guide?
-    !upgrade_guide_path.nil?
-  end
-
-  def upgrade_guide_short_link
-    @upgrade_guide_short_link ||= "docs." + File.basename(upgrade_guide_path, ".md")
   end
 
   private

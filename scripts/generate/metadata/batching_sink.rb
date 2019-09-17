@@ -3,6 +3,9 @@
 require_relative "option"
 require_relative "sink"
 
+# A batching sink is one that batches data and flushes on an interval.
+#
+# This sink requires and sets up options common to all sinks that batch data.
 class BatchingSink < Sink
   attr_reader :batch_size,
     :batch_timeout,

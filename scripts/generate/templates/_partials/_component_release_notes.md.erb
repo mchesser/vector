@@ -1,0 +1,47 @@
+---
+description: <%= component.name %> <%= component.type %> release notes.
+---
+
+# <%= component.name %> <%= component.type %> release notes
+
+![Vector v<%= release.version %> release][images.v<%= release.version %>]
+
+---
+
+* [**Changes**](#changes) - [+<%= release.insertions_count %> -<%= release.deletions_count %>](<%= release.compare_url %>)
+<%=- commit_type_toc_item("breaking change", release.breaking_changes).indent(2) -%>
+<%=- commit_type_toc_item("new feature", release.new_features).indent(2) -%>
+<%=- commit_type_toc_item("enhancement", release.enhancements).indent(2) -%>
+<%=- commit_type_toc_item("performance improvement", release.performance_improvements).indent(2) -%>
+<%=- commit_type_toc_item("bug fix", release.bug_fixes).indent(2) -%>
+* [**Updating**](#updating)-  [download][<%= release.short_link %>]
+* [**Contributors**](#contributors)
+* [**Community**][url.community] - [chat/forum][url.vector_chat], [mailing list][url.mailing_list]
+* [**Roadmap**][url.roadmap] - [vote on new features][url.vote_feature]
+
+---
+
+## Changes
+
+<%=- commit_type_commits("breaking change", release.breaking_changes) -%>
+<%=- commit_type_commits("new feature", release.new_features) -%>
+<%=- commit_type_commits("enhancement", release.enhancements) -%>
+<%=- commit_type_commits("performance improvement", release.performance_improvements) -%>
+<%=- commit_type_commits("bug fix", release.bug_fixes) -%>
+## Updating
+
+Please see the [updating docs][docs.updating] to update for your specific platform.
+
+## Contributors
+
+Thank you to all of our contributors:
+
+<%- release.authors.each do |author| -%>
+* <%= author %>
+<%- end -%>
+
+---
+
+<p align="center">
+  Developed with ❤️ by <strong><a href="https://timber.io">Timber.io</a></strong>
+</p>

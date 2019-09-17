@@ -4,6 +4,7 @@ require "toml-rb"
 require_relative "metadata/batching_sink"
 require_relative "metadata/exposing_sink"
 require_relative "metadata/links"
+require_relative "metadata/release"
 require_relative "metadata/source"
 require_relative "metadata/streaming_sink"
 require_relative "metadata/transform"
@@ -14,7 +15,7 @@ require_relative "metadata/transform"
 # each sub-component.
 class Metadata
   class << self
-    def load(meta_dir)
+    def load(meta_dir, opts = {})
       metadata = {}
 
       Dir.glob("#{meta_dir}/**/*.toml").each do |file|
@@ -22,25 +23,48 @@ class Metadata
         metadata.deep_merge!(hash)
       end
 
-      new(metadata)
+      new(metadata, opts)
     end
   end
 
   attr_reader :companies,
-    :enums,
     :links,
     :options,
+    :releases,
     :sinks,
     :sources,
     :transforms
 
-  def initialize(hash)
+  def initialize(hash, check_urls: true)
     @companies = hash.fetch("companies")
-    @enums = OpenStruct.new(hash.fetch("enums"))
     @options = OpenStruct.new()
+    @releases = OpenStruct.new()
     @sinks = OpenStruct.new()
     @sources = OpenStruct.new()
     @transforms = OpenStruct.new()
+
+    # releases
+    release_versions =
+      hash.fetch("releases").collect do |version_string, _release_hash|
+        Version.new(version_string)
+      end
+
+    # Seed the list of releases with the first version
+    release_versions << Version.new("0.3.0")
+
+    hash.fetch("releases").collect do |version_string, release_hash|
+      version = Version.new(version_string)
+
+      last_version =
+        release_versions.
+          select { |other_version| other_version < version }.
+          sort.
+          last
+
+      release_hash["version"] = version_string
+      release = Release.new(release_hash, last_version)
+      @releases.send("#{version_string}=", release)
+    end
 
     # sources
 
@@ -102,6 +126,10 @@ class Metadata
 
     # links
 
-    @links = Links.new(hash.fetch("links"))
+    @links = Links.new(hash.fetch("links"), check_urls: check_urls)
+  end
+
+  def components
+    @components ||= sources.to_h.values + transforms.to_h.values + sinks.to_h.values
   end
 end

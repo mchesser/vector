@@ -1,0 +1,12 @@
+<%- if commits.any? -%>
+### <%= type_name.capitalize.pluralize %>
+
+<%- commits.group_by(&:category).each do |category, category_commits| -%>
+#### <%= commit_type_category(type_name, category).capitalize.pluralize %>
+
+<%- category_commits.each do |commit| -%>
+* <%= render_commit(commit) %>
+<%- end -%>
+
+<%- end -%>
+<%- end -%>
