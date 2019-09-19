@@ -105,7 +105,7 @@
                     <tspan x="232.751953" y="197"><%= release_summary(release) %> </tspan>
                 </text>
                 <text id="+1,232,--4343" font-family="Helvetica" font-size="15" font-weight="normal" fill="#000000">
-                    <tspan x="404.002197" y="220">+<%= number_with_delimiter(release.insertions_count) %>, -<%= number_with_delimiter(release.deletions_count) %></tspan>
+                    <tspan x="352.002197" y="220"><%= release.date.iso8601 %>, +<%= number_with_delimiter(release.insertions_count) %>, -<%= number_with_delimiter(release.deletions_count) %></tspan>
                 </text>
                 <text id="v2.1.1" font-family="Arial-BoldMT, Arial" font-size="30" font-weight="bold" fill="#000000">
                     <tspan x="408.295898" y="54">v<%= release.version %></tspan>

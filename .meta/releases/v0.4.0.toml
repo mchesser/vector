@@ -1,3 +1,5 @@
+[releases."0.4.0"]
+date = 2019-09-17
 [[releases."0.4.0".commits]]
 author = "Lucio Franco"
 breaking_change = false
@@ -2582,10 +2584,11 @@ author = "Bruce Guenter"
 breaking_change = false
 date = 2019-07-10T19:50:42Z
 deletions_count = 1
-description = "Log when regex does not match (#618"
+description = "Log when regex does not match"
 files_count = 1
 insertions_count = 13
-message = "improvement(regex_parser transform): Log when regex does not match (#618"
+message = "improvement(regex_parser transform): Log when regex does not match (#618)"
+pr_number = 618
 scope = "regex_parser transform"
 sha = "009803467f4513827abbe4a28d8170a5593ea2c5"
 type = "improvement"

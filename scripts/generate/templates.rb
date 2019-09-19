@@ -70,17 +70,21 @@ class Templates
     end
   end
 
-  def commit_type_commits(type_name, commits)
+  def commit_type_commits(type_name, commits, grouped: false)
     commits =
       commits.sort_by do |commit|
-        [commit.scope.category, commit.scope.name, commit.date]
+        if grouped
+          [commit.scope.category, commit.scope.name, commit.date]
+        else
+          [commit.scope.name, commit.date]
+        end
       end
 
     render("_partials/_commit_type_commits.md", binding)
   end
 
   def commit_type_toc_item(type_name, commits)
-    render("_partials/_commit_type_toc_item.md", binding).strip.gsub(/,$/, "")
+    render("_partials/_commit_type_toc_item.md", binding).gsub(/,$/, "")
   end
 
   def component_config_example(component)
@@ -97,6 +101,10 @@ class Templates
 
   def component_header(component)
     render("_partials/_component_header.md", binding).strip
+  end
+
+  def component_release_notes(component)
+    render("_partials/_component_release_notes.md", binding)
   end
 
   def component_release_notes_default(component)
@@ -215,6 +223,14 @@ class Templates
 
   def pluralize(count, word)
     count != 1 ? "#{count} #{word.pluralize}" : "#{count} #{word}"
+  end
+
+  def release_changes(release, grouped: false)
+    render("_partials/_release_changes.md", binding)
+  end
+
+  def release_changes_toc(release)
+    render("_partials/_release_changes_toc.md", binding)
   end
 
   def release_notes(release)

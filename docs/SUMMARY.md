@@ -105,7 +105,7 @@
 ## Resources
 
 * [Community](https://vector.dev/community/)
-* [Download](https://github.com/timberio/vector/releases)
+* [Download](https://github.com/timberio/vector/releases/latest)
 * [Github Repo](https://github.com/timberio/vector)
 * [Roadmap](https://github.com/timberio/vector/milestones?direction=asc&sort=title&state=open)
 

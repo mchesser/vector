@@ -4,10 +4,11 @@ require_relative "../../util/version"
 class Release
   include Comparable
 
-  attr_reader :commits, :last_version, :version
+  attr_reader :commits, :date, :last_version, :version
 
   def initialize(release_hash, last_version)
     @last_version = last_version
+    @date = release_hash.fetch("date").to_date
     @version = Version.new(release_hash.fetch("version"))
 
     @commits =
@@ -64,18 +65,16 @@ class Release
     version.hash
   end
 
+  def human_date
+    date.strftime("%b %-d, %Y")
+  end
+
   def insertions_count
     @insertions_count ||= countable_commits.sum(&:insertions_count)
   end
 
   def new_features
     @new_features ||= commits.select(&:new_feature?)
-  end
-
-  def newer_releases(release)
-    releases.to_h.values.select do |other_release|
-      other_release > release
-    end
   end
 
   def major?

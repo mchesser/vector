@@ -114,14 +114,14 @@ where it left off.
 [docs.docker]: ../../../setup/installation/platforms/docker.md
 [docs.file_source]: ../../../usage/configuration/sources/file.md
 [docs.performance]: ../../../performance.md
-[docs.platforms]: ../../../setup/installation/platforms
+[docs.platforms]: ../../../setup/installation/platforms/README.md
 [docs.reloading]: ../../../usage/administration/reloading.md
 [docs.service_role]: ../../../setup/deployment/roles/service.md
-[docs.sinks]: ../../../usage/configuration/sinks
+[docs.sinks]: ../../../usage/configuration/sinks/README.md
 [docs.stdin_source]: ../../../usage/configuration/sources/stdin.md
 [docs.topologies.centralized]: ../../../setup/deployment/topologies.md#centralized
 [docs.topologies.stream-based]: ../../../setup/deployment/topologies.md#stream-based
-[docs.updating]: ../../../usage/administration/updating
+[docs.updating]: ../../../usage/administration/updating/README.md
 [docs.vector_sink]: ../../../usage/configuration/sinks/vector.md
 [docs.vector_source]: ../../../usage/configuration/sources/vector.md
 [url.big_query_streaming]: https://cloud.google.com/bigquery/streaming-data-into-bigquery

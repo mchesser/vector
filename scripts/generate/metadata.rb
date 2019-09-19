@@ -132,4 +132,40 @@ class Metadata
   def components
     @components ||= sources.to_h.values + transforms.to_h.values + sinks.to_h.values
   end
+
+  def latest_major_releases
+    version = Version.new("#{latest_version.major}.0.0")
+
+    releases_list.select do |release|
+      release.version >= version
+    end
+  end
+
+  def latest_version
+    releases_list.last.version
+  end
+
+  def newer_releases(release)
+    releases_list.select do |other_release|
+      other_release > release
+    end
+  end
+
+  def previous_minor_release(release)
+    version = Version.new("#{release.major}.#{release.minor}.0")
+
+    releases_list.
+      select do |release|
+        release.version < version
+      end.
+      last
+  end
+
+  def releases_list
+    @releases_list ||= @releases.to_h.values.sort
+  end
+
+  def relesed_versions
+    releases
+  end
 end

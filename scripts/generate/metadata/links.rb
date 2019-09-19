@@ -221,7 +221,7 @@ class Links
         docs.first
       elsif docs.length >= 2
         raise <<~EOF
-        #{name.inspect} is ambiguous and matches multiple doc.
+        #{name.inspect} is ambiguous and matches multiple docs.
 
         * #{docs.join("\n* ")}
         EOF
@@ -253,8 +253,8 @@ class Links
     def find(files, name)
       exact_matches =
         files.select do |file|
-          normalized_file = file.downcase
-          
+          normalized_file = file.downcase.gsub(/\/readme\.md$/, ".md")
+
           [normalized_file, normalized_file.gsub("-", "_")].any? do |file_name|
             !(file_name =~ /\/#{name}(\..*)$/).nil?
           end

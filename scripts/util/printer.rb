@@ -62,7 +62,5 @@ module Printer
   def title(words)
     separate(color: :cyan)
     say(words, color: :cyan, prompt: TITLE_PROMPT)
-    separate(color: :cyan)
-    puts ""
   end
 end

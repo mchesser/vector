@@ -5,7 +5,9 @@ description: Vector v<%= release.version %> release notes: <%= release_summary(r
 # v<%= release.version %> release notes
 
 <p align="center">
-  Get notified of releases → <strong><a href="https://github.com/timberio/vector/watchers">watch the Vector repo</a></strong> or <strong><a href="https://vector.dev/mailing_list/">join our mailing list</a></strong>.
+  <strong>
+    Get notified of releases → <a href="https://github.com/timberio/vector/watchers">watch the Vector repo</a> or <a href="https://vector.dev/mailing_list/">join our mailing list</a>.
+  </strong>
 </p>
 
 ---
@@ -15,11 +17,7 @@ description: Vector v<%= release.version %> release notes: <%= release_summary(r
 ---
 
 * [**Changes**](#changes) - [+<%= release.insertions_count %> -<%= release.deletions_count %>](<%= release.compare_url %>)<% if newer_releases.any? %>, [⚠️ <%= pluralize(newer_releases.size, "newer release") %>][docs.releases]<% end %>
-<%=- commit_type_toc_item("breaking change", release.breaking_changes).indent(2) -%>
-<%=- commit_type_toc_item("new feature", release.new_features).indent(2) -%>
-<%=- commit_type_toc_item("enhancement", release.enhancements).indent(2) -%>
-<%=- commit_type_toc_item("performance improvement", release.performance_improvements).indent(2) -%>
-<%=- commit_type_toc_item("bug fix", release.bug_fixes).indent(2) -%>
+<%=- release_changes_toc(release).indent(2) -%>
 * [**Contributors**](#contributors)
 * [**Updating**](#updating) - [download][<%= release.short_link %>]
 * [**Community**][url.community] - [chat/forum][url.vector_chat], [mailing list][url.mailing_list]
@@ -29,11 +27,7 @@ description: Vector v<%= release.version %> release notes: <%= release_summary(r
 
 ## Changes
 
-<%=- commit_type_commits("breaking change", release.breaking_changes) -%>
-<%=- commit_type_commits("new feature", release.new_features) -%>
-<%=- commit_type_commits("enhancement", release.enhancements) -%>
-<%=- commit_type_commits("performance improvement", release.performance_improvements) -%>
-<%=- commit_type_commits("bug fix", release.bug_fixes) -%>
+<%= release_changes(release, grouped: true) %>
 ## Contributors
 
 Thank you to all of our contributors:

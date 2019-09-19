@@ -1,0 +1,12 @@
+# v<%= metadata.latest_version.major %>.<%= metadata.latest_version.minor %> Changelog
+
+<%- metadata.latest_major_releases.each do |release| -%>
+* [**<%= release.version %>**](#<%= "#{release.version} - #{release.human_date}".parameterize %>) - <%= release_summary(release) %>
+<%- end -%>
+
+<%- metadata.latest_major_releases.each do |release| -%>
+## [<%= release.version %>][<%= release.short_link %>] - <%= release.human_date %>
+
+<%= release_changes(release) %>
+
+<%- end -%>
