@@ -299,6 +299,7 @@ mod integration_test {
             "localhost:9091",
             Some(KafkaSinkTlsConfig {
                 enabled: Some(true),
+                ca_path: Some("tests/data/Vector_CA.crt".into()),
                 ..Default::default()
             }),
         );
