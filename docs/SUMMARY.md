@@ -36,7 +36,7 @@
     * [RHEL](setup/installation/operating-systems/rhel.md)
     * [Ubuntu](setup/installation/operating-systems/ubuntu.md)
   * [Manual](setup/installation/manual/README.md)
-    * [From Archives](setup/installation/manual/from-archives.md)
+    * [From Pre-built Archives](setup/installation/manual/from-archives.md)
     * [From Source](setup/installation/manual/from-source.md)
 * [Getting Started](setup/getting-started/README.md)
   * [Sending Your First Event](setup/getting-started/sending-your-first-event.md)

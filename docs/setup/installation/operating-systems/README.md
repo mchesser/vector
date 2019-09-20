@@ -4,12 +4,6 @@ description: Install Vector on your operating system
 
 # Operating Systems
 
-{% hint style="info" %}
-Please make sure your [platform][docs.platforms] is not supported before proceeding
-with operating system instructions. We generally recommend [platform 
-installations][docs.platforms] first.
-{% endhint %}
-
 Vector offers installation instructions for the following operating systems:
 
 {% page-ref page="amazon-linux.md" %}
@@ -23,6 +17,8 @@ Vector offers installation instructions for the following operating systems:
 {% page-ref page="rhel.md" %}
 
 {% page-ref page="ubuntu.md" %}
+
+## Alternatives
 
 If you do not see your operating system you can consider:
 
