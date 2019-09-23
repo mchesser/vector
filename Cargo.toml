@@ -40,14 +40,14 @@ members = [
 [dependencies]
 # Internal libs
 codec = { path = "lib/codec" }
-file-source = { path = "lib/file-source" }
+file-source = { path = "lib/file-source", optional = true }
 journald = { path = "lib/journald" }
 tracing-metrics = { path = "lib/tracing-metrics" }
 tracing-limit = { path = "lib/tracing-limit" }
 
 # Tokio / Futures
 futures = "0.1.25"
-tokio = { version = "0.1.22", features = ["io", "uds", "tcp", "rt-full", "experimental-tracing"], default-features = false }
+tokio = { version = "0.1.22", features = ["io", "tcp", "rt-full", "experimental-tracing"], default-features = false }
 tokio-retry = "0.2.0"
 tokio-signal = "0.2.7"
 tokio-threadpool = "0.1.8"
@@ -146,7 +146,8 @@ tokio01-test = "0.1.1"
 tower-test = "0.1"
 
 [features]
-default = ["rdkafka", "leveldb", "jemallocator"]
+default = ["rdkafka", "leveldb", "jemallocator", "file-source", "tokio/uds", "file-sink"]
+file-sink = []
 docker = [
   "cloudwatch-logs-integration-tests",
   "cloudwatch-metrics-integration-tests",

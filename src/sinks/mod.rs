@@ -9,6 +9,7 @@ pub mod blackhole;
 pub mod clickhouse;
 pub mod console;
 pub mod elasticsearch;
+#[cfg(feature = "file-sink")]
 pub mod file;
 pub mod http;
 #[cfg(feature = "rdkafka")]
