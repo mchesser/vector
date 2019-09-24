@@ -28,7 +28,6 @@
 //! })
 //! ```
 
-use hotmic::Sink;
 use std::{
     collections::{HashMap, HashSet},
     fmt,
@@ -42,14 +41,14 @@ use tracing_core::{
 
 /// Metrics collector
 // TODO(lucio): move this to a trait
-pub type Collector = Sink<&'static str>;
+pub type Collector = metrics_runtime::Sink;
 
 /// The subscriber that wraps another subscriber and produces metrics
 pub struct MetricsSubscriber<S> {
     inner: S,
     spans: Mutex<HashMap<Id, Span>>,
     interest: RwLock<HashSet<&'static str>>,
-    collector: Collector,
+    collector: RwLock<Collector>,
 }
 
 /// A `tracing_core::field::Visit` implementation that captures fields
@@ -73,7 +72,7 @@ impl<S> MetricsSubscriber<S> {
     pub fn new(inner: S, collector: Collector) -> Self {
         MetricsSubscriber {
             inner,
-            collector,
+            collector: RwLock::new(collector),
             interest: RwLock::new(HashSet::new()),
             spans: Mutex::new(HashMap::new()),
         }
@@ -110,7 +109,7 @@ impl<S: Subscriber> Subscriber for MetricsSubscriber<S> {
     }
 
     fn event(&self, event: &Event<'_>) {
-        let mut recorder = MetricVisitor::new(self.collector.clone());
+        let mut recorder = MetricVisitor::new(self.collector.read().unwrap().clone());
         event.record(&mut recorder);
 
         let selective_interest = {
@@ -131,7 +130,7 @@ impl<S: Subscriber> Subscriber for MetricsSubscriber<S> {
 
         let mut spans = self.spans.lock().unwrap();
         if let Some(span) = &mut spans.get_mut(span) {
-            let start = self.collector.clock().start();
+            let start = self.collector.read().unwrap().now();
             span.start_execution = Some(start);
 
             if let None = span.start_duration {
@@ -145,7 +144,7 @@ impl<S: Subscriber> Subscriber for MetricsSubscriber<S> {
 
         let mut spans = self.spans.lock().unwrap();
         if let Some(span) = &mut spans.get_mut(span) {
-            let end = self.collector.clock().end();
+            let end = self.collector.read().unwrap().now();
 
             // TODO: bring this back when we can do it without an allocation
             // if let Some(start) = span.start_execution {
@@ -203,7 +202,7 @@ impl<S: Subscriber> Subscriber for MetricsSubscriber<S> {
             if span.ref_count == 0 {
                 if let Some(start) = span.start_duration {
                     if let Some(end) = span.end_duration {
-                        self.collector.update_timing(span.key, start, end);
+                        self.collector.write().unwrap().record_timing(span.key, start, end);
                     }
                 }
             }
@@ -229,17 +228,17 @@ impl Visit for MetricVisitor {
 
     fn record_u64(&mut self, field: &Field, value: u64) {
         if field.name().ends_with("_counter") {
-            self.collector.update_count(field.name(), value as i64);
+            self.collector.record_counter(field.name(), value);
         } else if field.name().ends_with("_gauge") {
-            self.collector.update_gauge(field.name(), value);
+            self.collector.record_gauge(field.name(), value as i64);
         }
     }
 
     fn record_i64(&mut self, field: &Field, value: i64) {
         if field.name().ends_with("_counter") {
-            self.collector.update_count(field.name(), value);
+            self.collector.record_counter(field.name(), value as u64);
         } else if field.name().ends_with("_gauge") {
-            self.collector.update_gauge(field.name(), value as u64);
+            self.collector.record_gauge(field.name(), value);
         }
     }
 }

@@ -312,8 +312,8 @@ fn run(
     topology: vector::topology::RunningTopology,
     mut graceful_crash: futures::sync::mpsc::UnboundedReceiver<()>,
 ) {
-    let crash = future::poll_fn(|| graceful_crash.poll());
-    let _ = crash.wait();
+    let crash = future::poll_fn(move || graceful_crash.poll());
+    rt.block_on(crash).unwrap();
 
     let shutdown = topology.stop();
     metrics_trigger.cancel();

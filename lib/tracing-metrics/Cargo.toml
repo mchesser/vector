@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 tracing-core = "0.1"
-hotmic = "0.8"
+metrics-runtime = "0.1"
 
 [dev-dependencies]
 tracing = "0.1.2"

@@ -61,7 +61,7 @@ tracing-env-logger = { git = "https://github.com/tokio-rs/tracing" }
 tracing-tower-http = { git = "https://github.com/tokio-rs/tracing" }
 
 # Metrics
-hotmic = "0.8"
+metrics-runtime = "0.1.0"
 
 # Aws
 rusoto_core = "0.37.0"
